@@ -1,0 +1,6 @@
+{
+  "source_branch": "dev_r4",
+  "target_branch": "uat_r4",
+  "gitlab_url": "git.tsp.dev",
+  "project_path": "sla-leap/leap-web"
+}
