@@ -190,9 +190,10 @@ def main():
 
     # ── 1. Fetch ──────────────────────────────────────────────────────────────
     print("[1/5] Fetching origin...")
-    git(f"fetch origin {source_branch}")
+    git(f"fetch origin {source_branch} {target_branch}")
 
     source_ref = f"origin/{source_branch}"
+    target_ref = f"origin/{target_branch}"
 
     # ── 2. Find commits ───────────────────────────────────────────────────────
     print(f"[2/5] Searching {source_branch} for commits...\n")
@@ -220,7 +221,7 @@ def main():
         sys.exit(0)
 
     # ── 3. Create UAT branch ──────────────────────────────────────────────────
-    print(f"\n[3/5] Creating {uat_branch} from {source_ref}...")
+    print(f"\n[3/5] Creating {uat_branch} from {target_ref}...")
 
     existing = git("branch --list " + uat_branch, capture=True).stdout.strip()
     if existing:
@@ -232,7 +233,7 @@ def main():
     stash_result = git("stash push -m 'curator-autostash'", capture=True)
     stashed = "No local changes" not in stash_result.stdout
 
-    git(f"checkout -b {uat_branch} {source_ref}")
+    git(f"checkout -b {uat_branch} {target_ref}")
 
     if stashed:
         print("  Restoring stashed local changes...")
