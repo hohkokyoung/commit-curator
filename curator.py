@@ -251,6 +251,7 @@ def main():
             shell=True,
             capture_output=True,
             text=True,
+            cwd=REPO_PATH or None,
             env=env_no_editor,
         )
 
@@ -280,6 +281,7 @@ def main():
         subprocess.run(
             "git cherry-pick --continue --no-edit",
             shell=True,
+            cwd=REPO_PATH or None,
             env=env_no_editor,
         )
         print(f"{'':>{len(prefix)}}  ✓ Conflict resolved\n")
