@@ -69,15 +69,18 @@ def has_unresolved_conflicts() -> bool:
 
 def find_commits(ticket: str, source_ref: str) -> list[tuple[str, str]]:
     """Return [(sha, subject), ...] oldest-first for commits matching ticket."""
-    result = git(
-        f'log {source_ref} --grep="{ticket}" --no-merges --format="%H|%s" --reverse',
-        capture=True,
+    # Use a list of args (no shell=True) so Windows cmd.exe doesn't mangle
+    # the % format tokens or treat | as a pipe operator.
+    result = subprocess.run(
+        ["git", "log", source_ref, f"--grep={ticket}", "--no-merges",
+         "--pretty=format:%H %s", "--reverse"],
+        capture_output=True, text=True, cwd=REPO_PATH or None,
     )
     commits = []
     for line in result.stdout.splitlines():
         line = line.strip()
         if line:
-            sha, _, subject = line.partition("|")
+            sha, _, subject = line.partition(" ")
             commits.append((sha.strip(), subject.strip()))
     return commits
 
