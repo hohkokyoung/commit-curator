@@ -50,7 +50,7 @@ def run(cmd: str, check=True, capture=False) -> subprocess.CompletedProcess:
         cwd=REPO_PATH or None,
     )
     if check and result.returncode != 0:
-        raise RuntimeError(f"Command failed: {cmd}\n{result.stderr.strip()}")
+        raise RuntimeError(f"Command failed: {cmd}\n{(result.stderr or '').strip()}")
     return result
 
 
@@ -225,7 +225,15 @@ def main():
         print("  Delete it first:  git branch -D " + uat_branch)
         sys.exit(1)
 
+    # Stash any local changes so checkout doesn't get blocked
+    stash_result = git("stash push -m 'curator-autostash'", capture=True)
+    stashed = "No local changes" not in stash_result.stdout
+
     git(f"checkout -b {uat_branch} {source_ref}")
+
+    if stashed:
+        print("  Restoring stashed local changes...")
+        git("stash pop")
 
     # ── 4. Cherry-pick ────────────────────────────────────────────────────────
     print(f"\n[4/5] Cherry-picking {len(all_commits)} commit(s)...\n")
