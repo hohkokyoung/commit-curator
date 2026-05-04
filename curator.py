@@ -41,8 +41,14 @@ def load_env() -> dict:
     return env
 
 
+REPO_PATH: str = ""
+
+
 def run(cmd: str, check=True, capture=False) -> subprocess.CompletedProcess:
-    result = subprocess.run(cmd, shell=True, capture_output=capture, text=True)
+    result = subprocess.run(
+        cmd, shell=True, capture_output=capture, text=True,
+        cwd=REPO_PATH or None,
+    )
     if check and result.returncode != 0:
         raise RuntimeError(f"Command failed: {cmd}\n{result.stderr.strip()}")
     return result
@@ -77,8 +83,8 @@ def find_commits(ticket: str, source_ref: str) -> list[tuple[str, str]]:
 
 
 def open_vscode_blocking():
-    """Open VS Code in the current directory and block until the window closes."""
-    run("code --wait .", check=False)
+    """Open VS Code in the repo directory and block until the window closes."""
+    run(f'code --wait "{REPO_PATH}"', check=False)
 
 
 def create_mr(
@@ -139,6 +145,8 @@ def main():
 
     tickets = [t.upper() for t in sys.argv[1:]]
 
+    global REPO_PATH
+
     config = load_config()
     env = load_env()
 
@@ -146,6 +154,15 @@ def main():
     target_branch: str = config.get("target_branch", "uat_r4")
     gitlab_url: str = config.get("gitlab_url", "git.tsp.dev")
     project_path: str = config.get("project_path", "sla-leap/leap-web")
+    repo_path: str = config.get("repo_path", "")
+
+    if not repo_path:
+        print("ERROR: Set 'repo_path' in config.json to your local leap-web repo path.")
+        sys.exit(1)
+    if not Path(repo_path).is_dir():
+        print(f"ERROR: repo_path '{repo_path}' does not exist.")
+        sys.exit(1)
+    REPO_PATH = repo_path
 
     token = env.get("GITLAB_TOKEN", "")
     if not token or token == "your_pat_here":
