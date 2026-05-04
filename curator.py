@@ -70,7 +70,7 @@ def has_unresolved_conflicts() -> bool:
 def find_commits(ticket: str, source_ref: str) -> list[tuple[str, str]]:
     """Return [(sha, subject), ...] oldest-first for commits matching ticket."""
     result = git(
-        f'log {source_ref} --grep="{ticket}" --format="%H|%s" --reverse',
+        f'log {source_ref} --grep="{ticket}" --no-merges --format="%H|%s" --reverse',
         capture=True,
     )
     commits = []
@@ -187,7 +187,7 @@ def main():
 
     # ── 1. Fetch ──────────────────────────────────────────────────────────────
     print("[1/5] Fetching origin...")
-    git("fetch origin")
+    git(f"fetch origin {source_branch}")
 
     source_ref = f"origin/{source_branch}"
 
