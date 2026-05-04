@@ -15,6 +15,8 @@ from pathlib import Path
 
 try:
     import requests
+    import urllib3
+    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 except ImportError:
     print("ERROR: Run  pip install requests  first.")
     sys.exit(1)
@@ -118,6 +120,7 @@ def create_mr(
             "description": description,
             "remove_source_branch": False,
         },
+        verify=False,
         timeout=30,
     )
 
